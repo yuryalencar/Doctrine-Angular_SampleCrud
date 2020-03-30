@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="waterStore">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Store</title>
+    <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.css">
+    <script src="node_modules/angular/angular.js"></script>
+
+    <style>
+        .jumbotron {
+            width: 600px;
+            text-align: center;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .table {
+            margin-top: 20px;
+        }
+
+        .form-control {
+            margin-top: 5px;
+        }
+
+        .btn {
+            margin-top: 5px;
+        }
+
+        .selected {
+            background-color: rgb(169, 197, 9);
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .alert {
+            margin-top: 5px;
+        }
+    </style>
+
+    <script>
+        angular.module("waterStore", []);
+        angular.module("waterStore").controller("waterStoreCtrl", function ($scope, $http) {
+            $scope.app = "Water Store - Users";
+            $scope.registerUser = "Register User";
+
+            var loadUsers = function () {
+                $http.get("http://localhost/Doctrine-Angular_SampleCrud/backend/user").then(function (data) {
+                    $scope.users = data.data;
+                }, function (error) {
+                });
+            }
+
+            $scope.delete = function (users) {
+
+                for (let index = 0; index < users.length; index++) {
+                    if(users[index].selected){
+                        $http.delete("http://localhost/Doctrine-Angular_SampleCrud/backend/user/"+users[index].id).then(function (data) {
+                        loadUsers();
+                        delete $scope.user;
+                        $scope.userForm.$setPristine();
+                    }, function (error) {
+                    });
+
+                    }
+                }
+            };
+
+            $scope.register = function (user) {
+                user.id = 0;
+                $http.post("http://localhost/Doctrine-Angular_SampleCrud/backend/user", user).then(function (data) {
+                    loadUsers();
+                    delete $scope.user;
+                    $scope.userForm.$setPristine();
+                }, function (error) {
+                });
+            };
+
+            $scope.isUsersSelected = function (users) {
+                if (users != null) {
+
+                    return users.some(function (user) {
+                        return user.selected;
+                    });
+                } else {
+                    return false;
+                }
+            };
+
+            $scope.orderByParam = function (field) {
+                $scope.fieldOrder = field;
+                $scope.directionOrder = !$scope.directionOrder;
+            };
+
+            loadUsers();
+        });
+    </script>
+</head>
+
+<body ng-controller="waterStoreCtrl">
+    <div class="jumbotron">
+        <h3 ng-bind="app"></h3>
+
+        <input ng-show="users.length > 0" class="form-control" placeholder="Search" type="text" ng-model="textSearch" id="search" />
+
+        <table ng-show="users.length > 0" class="table">
+            <tr>
+                <th></th>
+                <th><a href="" ng-click="orderByParam('username')">Username</a></th>
+                <th><a href="" ng-click="orderByParam('address')">Address</a></th>
+            </tr>
+            <tr ng-class="{'selected bold': user.selected}"
+                ng-repeat="user in users | filter:textSearch | orderBy:fieldOrder:directionOrder">
+                <td><input type="checkbox" ng-model="user.selected" id="user.id"></td>
+                <td ng-bind="user.username"></td>
+                <td ng-bind="user.address"></td>
+            </tr>
+        </table>
+
+        <button class="btn btn-danger btn-block" ng-click="delete(users)" ng-if="isUsersSelected(users)">Delete
+            User</button>
+
+        <hr />
+
+        <h3 ng-bind="registerUser"></h3>
+        <form name="userForm">
+            <input class="form-control" placeholder="Insert a Username" ng-required="true" type="text"
+                ng-model="user.username" ng-minlength="5" name="username" id="username" />
+            <input class="form-control" placeholder="Insert a Password" ng-required="true" type="password"
+                ng-model="user.password" ng-minlength="5" name="password" id="password" />
+            <input class="form-control" placeholder="Insert a Address" ng-required="true" type="text"
+                ng-model="user.address" name="address" id="address" />
+
+            <div ng-show="userForm.username.$error.required && userForm.username.$dirty" class="alert alert-danger">
+                Username is Required
+            </div>
+            <div ng-show="userForm.password.$error.required && userForm.password.$dirty" class="alert alert-danger">
+                Password is Required
+            </div>
+            <div ng-show="userForm.username.$error.minlength && userForm.username.$dirty" class="alert alert-danger">
+                Username is Required 5 Caracteres
+            </div>
+            <div ng-show="userForm.password.$error.minlength && userForm.password.$dirty" class="alert alert-danger">
+                Password is Required 5 Caracteres
+            </div>
+            <div ng-show="userForm.address.$invalid && userForm.address.$dirty" class="alert alert-danger">
+                Address is Required
+            </div>
+
+            <button class="btn btn-dark btn-block" ng-click="register(user)"
+                ng-disabled="userForm.$invalid">Register</button>
+        </form>
+    </div>
+    <div ng-include="'footer.html'"></div>
+
+</body>
+
+</html>
