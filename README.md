@@ -1,6 +1,6 @@
 
 # This is a sample CRUD using Doctrine PHP and Angular
-System developed in Laravel 5.5 and PHP 7.2.10 for web with the intention to manage business plans.
+System developed in Slim and PHP 7.4.3.
 
 ## 1. Requirements for Install (Back-end)
 Technologies :
